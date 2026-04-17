@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>DiffNR: Diffusion-Enhanced Neural Representation Optimization for Sparse-View 3D Tomographic Reconstruction</title>
+        <link rel="icon" type="image/png" href="figs/favicon.png">
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!-- Open Graph -->
+        <meta property="og:title" content="DiffNR" />
+        <meta property="og:description" content="Diffusion-Enhanced Neural Representation Optimization for Sparse-View 3D Tomographic Reconstruction" />
+
+        <!-- Twitter -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="DiffNR" />
+        <meta name="twitter:description" content="Diffusion-Enhanced Neural Representation Optimization for Sparse-View 3D Tomographic Reconstruction" />
+
+        <script src="./static/js/distill_template.v2.js"></script>
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+        <link rel="stylesheet" href="./static/css/style.css">
+        <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+
+        <script defer src="./static/js/fontawesome.all.min.js"></script>
+
+        <!-- medium zoom — same as Cambrian-S -->
+        <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+        <script defer src="./static/js/medium-zoom.min.js"></script>
+        <script defer src="./static/js/zoom.js"></script>
+    </head>
+    <body>
+        <!-- ==================== HEADER ==================== -->
+        <div class="header-wrapper">
+            <div class="header-container">
+                <div class="header-content">
+                    <h1 class="header-title">DiffNR</h1>
+                    <h2 class="header-subtitle">Diffusion-Enhanced Neural Representation Optimization for Sparse-View 3D Tomographic Reconstruction</h2>
+
+                    <p class="header-desc">We propose DiffNR, a novel framework that enhances neural representation optimization with diffusion priors for sparse-view 3D CT reconstruction, improving PSNR by 3.99 dB on average while maintaining efficient optimization.</p>
+
+                    <div class="icon-container">
+                        <div class="icon-item">
+                            <div class="feature-icon"><i class="fas fa-magic"></i></div>
+                            <div><strong>SliceFixer:</strong> a single-step diffusion model that corrects artifacts in NR-reconstructed CT slices, conditioned on biplanar X-ray projections and text prompts.</div>
+                        </div>
+                        <div class="icon-item">
+                            <div class="feature-icon"><i class="fas fa-sync-alt"></i></div>
+                            <div><strong>Repair &amp; Augment:</strong> periodically optimizing with pseudo-reference volumes under 3D perceptual SSIM supervision, avoiding frequent diffusion queries and hallucinated details.</div>
+                        </div>
+                        <div class="icon-item">
+                            <div class="feature-icon"><i class="fas fa-database"></i></div>
+                            <div><strong>Data Curation:</strong> mixed NR types, varied view distributions, and intentional underfitting to generate diverse artifact patterns for robust SliceFixer training.</div>
+                        </div>
+                        <div class="icon-item">
+                            <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                            <div><strong>Empirical gains:</strong> DiffNR improves NR baselines by +2.19 dB (NAF) and +5.79 dB (R<sup>2</sup>-Gaussian), generalizes to out-of-distribution domains, and boosts downstream segmentation.</div>
+                        </div>
+                    </div>
+
+                    <div class="button-container">
+                        <a href="./paper/DiffNR_AAAI26.pdf" class="button" target="_blank">
+                            <span class="icon is-small">
+                                <i class="fas fa-file-pdf"></i>
+                            </span>
+                            <span>Paper</span>
+                        </a>
+                        <a href="#" class="button">
+                            <span class="icon is-small">
+                                <i class="ai ai-arxiv"></i>
+                            </span>
+                            <span>arXiv</span>
+                        </a>
+                        <a href="https://github.com/ooonesevennn/DiffNR" class="button" target="_blank">
+                            <span class="icon is-small">
+                                <i class="fab fa-github"></i>
+                            </span>
+                            <span>Code</span>
+                        </a>
+                        <a href="#bibtex" class="button">
+                            <span class="icon is-small">
+                                <i class="fas fa-link"></i>
+                            </span>
+                            <span>BibTeX</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="header-image">
+                    <img src="figs/logo_v3_0_transparent.png" alt="DiffNR logo" draggable="false">
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== MAIN CONTENT ==================== -->
+        <d-article>
+            <!-- Authors -->
+            <div class="byline">
+                <div class="byline-container">
+                    <div class="authors" style="text-align: center; margin-bottom: 1rem;">
+                        <div style="margin-bottom: 0.5rem;">
+                            <a href="#" target="_blank" style="color: inherit;"><span class="author-name">Shiyan Su</span></a><sup>1*</sup>,
+                            <a href="#" target="_blank" style="color: inherit;"><span class="author-name">Ruyi Zha</span></a><sup>2*</sup>,
+                            <a href="#" target="_blank" style="color: inherit;"><span class="author-name">Danli Shi</span></a><sup>3</sup>,
+                            <a href="#" target="_blank" style="color: inherit;"><span class="author-name">Hongdong Li</span></a><sup>2</sup>,
+                            <a href="#" target="_blank" style="color: inherit;"><span class="author-name">Xuelian Cheng</span></a><sup>1&dagger;</sup>
+                        </div>
+                    </div>
+                    <div style="text-align: center; font-size: 1.1rem; color: #666;">
+                        <span><sup>*</sup>Equal Contribution</span> &nbsp;
+                        <span><sup>&dagger;</sup>Corresponding Author</span>
+                    </div>
+                    <div class="affiliations" style="text-align: center; font-size: 1.1rem; color: #666;">
+                        <span><sup>1</sup>Monash University</span> &nbsp;
+                        <span><sup>2</sup>The Australian National University</span> &nbsp;
+                        <span><sup>3</sup>Hong Kong Polytechnic University</span>
+                    </div>
+                    <div style="text-align: center; font-size: 1rem; color: #666; margin-top: 0.5rem;">
+                        Contact: shiyan.su@monash.edu
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TEASER FIGURE ==================== -->
+            <section id="teaser" class="teaser-section" style="margin-top: 2rem; margin-bottom: 2rem;">
+                <d-figure>
+                    <figure>
+                        <img src="figs/teaser.png" alt="DiffNR teaser: CT geometry, method overview, and qualitative results" class="pdf-figure" style="width: 100%; height: auto; border: none;" data-zoomable="" draggable="false">
+                        <figcaption>
+                            <strong>Figure 1:</strong> We propose DiffNR for sparse-view 3D CT reconstruction. (a) Geometry of a cone-beam CT scanner. (b) Method overview. (c) Comparison between the baseline methods (NAF, R<sup>2</sup>-Gaussian) and our proposed DiffNR.
+                        </figcaption>
+                    </figure>
+                </d-figure>
+            </section>
+
+            <!-- ==================== ABSTRACT ==================== -->
+            <h1 class="text">Abstract</h1>
+            <p class="text">
+                Neural representations (NRs), such as neural fields and 3D Gaussians, effectively model volumetric data in computed tomography (CT) but suffer from severe artifacts under sparse-view settings. To address this, we propose DiffNR, a novel framework that enhances NR optimization with diffusion priors. At its core is SliceFixer, a single-step diffusion model designed to correct artifacts in degraded slices. We integrate specialized conditioning layers into the network and develop tailored data curation strategies to support model finetuning. During reconstruction, SliceFixer periodically generates pseudo-reference volumes, providing auxiliary 3D perceptual supervision to fix underconstrained regions. Compared to prior methods that embed CT solvers into time-consuming iterative denoising, our repair-and-augment strategy avoids frequent diffusion model queries, leading to better runtime performance. Extensive experiments show that DiffNR improves PSNR by 3.99 dB on average, generalizes well across domains, and maintains efficient optimization.
+            </p>
+
+            <!-- ==================== METHOD OVERVIEW ==================== -->
+            <section id="method">
+                <h1 class="text">Method</h1>
+
+                <div class="method-highlights">
+                    <div class="method-highlight-item">
+                        <i class="fas fa-magic"></i>
+                        <h4>SliceFixer</h4>
+                        <p>A single-step diffusion model finetuned from SD-Turbo to correct artifacts in NR-reconstructed CT slices, conditioned on biplanar X-ray projections and text prompts.</p>
+                    </div>
+                    <div class="method-highlight-item">
+                        <i class="fas fa-database"></i>
+                        <h4>Data Curation</h4>
+                        <p>Tailored strategies including mixed NR types, varied view distributions, and intentional model underfitting to generate diverse artifact patterns for SliceFixer training.</p>
+                    </div>
+                    <div class="method-highlight-item">
+                        <i class="fas fa-sync-alt"></i>
+                        <h4>Repair &amp; Augment</h4>
+                        <p>SliceFixer periodically generates pseudo-reference volumes with 3D perceptual SSIM supervision, avoiding frequent diffusion queries for efficient optimization.</p>
+                    </div>
+                </div>
+
+                <h3 class="text">SliceFixer: Diffusion Model for Slice Repairing</h3>
+                <p class="text">
+                    Previous methods in RGB view synthesis repair artifacts at the projection level, which is suboptimal for volumetric reconstruction where errors in penetrable X-ray projections accumulate. SliceFixer instead operates directly on reconstructed CT slices. Built upon SD-Turbo, it takes a corrupted axial slice as input and outputs a refined slice. The model is conditioned on: (1) a text prompt providing semantic guidance (e.g., organ type), and (2) two orthogonal X-ray projections encoded by RAD-DINO, providing global structural cues. We inject LoRA adapters and zero-convolution skip connections for efficient finetuning.
+                </p>
+
+                <d-figure>
+                    <figure>
+                        <img src="figs/diffusion_model.png" alt="SliceFixer Architecture" class="pdf-figure" style="width: 100%; height: auto; border: none;" data-zoomable="" draggable="false">
+                        <figcaption>
+                            <strong>Figure 2:</strong> SliceFixer Architecture. It takes as input a CT slice queried from NRs, along with biplanar projections and a text prompt as conditions. It outputs a refined slice without artifacts. The model is built on SD-Turbo, a single-step diffusion backbone. Trainable LoRA layers and zero convolutions are injected to adapt the model.
+                        </figcaption>
+                    </figure>
+                </d-figure>
+
+                <h3 class="text">DiffNR: Diffusion-Enhanced NR Optimization</h3>
+                <p class="text">
+                    Rather than using SliceFixer as post-processing, we integrate it into the NR optimization loop. The pipeline operates in two stages: <strong>Stage 1</strong> optimizes a neural representation (e.g., NAF or R<sup>2</sup>-Gaussian) using standard image losses (L1 and SSIM) and total variation regularization. In <strong>Stage 2</strong>, every \(\ell\) iterations, we query a volume from the current model, apply SliceFixer to repair each axial slice, and assemble them into a pseudo-reference volume. This reference volume then provides auxiliary 3D SSIM-based perceptual supervision every \(\tau\) steps. The perceptual loss promotes structural coherence rather than overfitting to potentially hallucinated fine-grained details.
+                </p>
+
+                <d-figure>
+                    <figure>
+                        <img src="figs/diffnr_pipeline.png" alt="DiffNR Pipeline" class="pdf-figure" style="width: 100%; height: auto; border: none;" data-zoomable="" draggable="false">
+                        <figcaption>
+                            <strong>Figure 3:</strong> DiffNR Pipeline. During the training, we train neural representations using image losses and low-level regularization. In Stage 2, we generate a pseudo-reference volume with SliceFixer every \(\ell\) iterations, and then apply SSIM regularization on queried and reference volumes.
+                        </figcaption>
+                    </figure>
+                </d-figure>
+
+                <div class="highlight-box">
+                    <p>
+                        <i class="fas fa-bookmark" style="color: #8b7355; margin-right: 10px;"></i>
+                        Unlike prior methods that embed CT solvers into time-consuming iterative denoising, our repair-and-augment strategy avoids frequent diffusion model queries, leading to better <strong>reconstruction quality</strong> and <strong>runtime performance</strong>.
+                    </p>
+                </div>
+            </section>
+
+            <!-- ==================== RESULTS ==================== -->
+            <section id="results">
+                <h1 class="text">Results</h1>
+
+                <h3 class="text">In-Distribution Performance</h3>
+                <p class="text">
+                    We evaluate DiffNR on two datasets: <strong>ToothFairy</strong> (dental CT) and <strong>LUNA16</strong> (chest CT), under challenging 36-, 24-, and 12-view sparse-view settings. DiffNR consistently enhances NR baselines, yielding an average improvement of +2.19 dB for NAF and +5.79 dB for R<sup>2</sup>-Gaussian, while remaining substantially faster than prior diffusion-based methods.
+                </p>
+
+                <!-- Table 1: Main quantitative results -->
+                <div id="tab:main_results" style="display: flex; flex-direction: column; align-items: center; margin-top: 1.5rem; margin-bottom: 1.5rem;">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                            <tr>
+                                <th rowspan="2" class="tb-hdr">Methods</th>
+                                <th colspan="3" class="tb-hdr">ToothFairy</th>
+                                <th colspan="3" class="tb-hdr">LUNA16</th>
+                                <th rowspan="2" class="tb-hdr">Time</th>
+                            </tr>
+                            <tr>
+                                <th>36-view</th>
+                                <th>24-view</th>
+                                <th>12-view</th>
+                                <th>36-view</th>
+                                <th>24-view</th>
+                                <th>12-view</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <!-- Traditional -->
+                            <tr style="background-color: #f2f8fc;">
+                                <td colspan="8" style="font-style: italic; font-weight: bold; text-align: left;"><i>Traditional Methods</i></td>
+                            </tr>
+                            <tr>
+                                <td>SART</td>
+                                <td>27.41 / 0.581</td>
+                                <td>27.13 / 0.596</td>
+                                <td>25.66 / 0.604</td>
+                                <td>22.34 / 0.438</td>
+                                <td>21.77 / 0.437</td>
+                                <td>19.96 / 0.412</td>
+                                <td>1m25s</td>
+                            </tr>
+                            <tr>
+                                <td style="border-bottom: 1px solid #999;">ASD-POCS</td>
+                                <td style="border-bottom: 1px solid #999;">29.65 / 0.775</td>
+                                <td style="border-bottom: 1px solid #999;">28.34 / 0.765</td>
+                                <td style="border-bottom: 1px solid #999;">25.91 / 0.721</td>
+                                <td style="border-bottom: 1px solid #999;">23.93 / 0.661</td>
+                                <td style="border-bottom: 1px solid #999;">22.63 / 0.616</td>
+                                <td style="border-bottom: 1px solid #999;">20.04 / 0.512</td>
+                                <td style="border-bottom: 1px solid #999;">48s</td>
+                            </tr>
+                            <!-- Diffusion-Based -->
+                            <tr style="background-color: #f2f8fc;">
+                                <td colspan="8" style="font-style: italic; font-weight: bold; text-align: left;"><i>Diffusion-Based Iterative Methods</i></td>
+                            </tr>
+                            <tr>
+                                <td>DiffusionMBIR</td>
+                                <td>33.29 / 0.856</td>
+                                <td>30.54 / 0.818</td>
+                                <td>26.28 / 0.733</td>
+                                <td>29.35 / 0.781</td>
+                                <td>27.15 / 0.735</td>
+                                <td>23.01 / 0.581</td>
+                                <td>11h15m</td>
+                            </tr>
+                            <tr>
+                                <td style="border-bottom: 1px solid #999;">DDS</td>
+                                <td style="border-bottom: 1px solid #999;">32.56 / 0.817</td>
+                                <td style="border-bottom: 1px solid #999;">31.13 / 0.788</td>
+                                <td style="border-bottom: 1px solid #999;">28.66 / 0.767</td>
+                                <td style="border-bottom: 1px solid #999;">26.21 / 0.554</td>
+                                <td style="border-bottom: 1px solid #999;">25.21 / 0.512</td>
+                                <td style="border-bottom: 1px solid #999;">23.29 / 0.486</td>
+                                <td style="border-bottom: 1px solid #999;">16m17s</td>
+                            </tr>
+                            <!-- Neural Representation -->
+                            <tr style="background-color: #f2f8fc;">
+                                <td colspan="8" style="font-style: italic; font-weight: bold; text-align: left;"><i>Neural Representation Methods</i></td>
+                            </tr>
+                            <tr>
+                                <td>SAX-NeRF</td>
+                                <td>28.48 / 0.835</td>
+                                <td>27.91 / 0.832</td>
+                                <td>26.11 / 0.812</td>
+                                <td>23.72 / 0.704</td>
+                                <td>23.20 / 0.690</td>
+                                <td>21.50 / 0.639</td>
+                                <td>4h9m</td>
+                            </tr>
+                            <tr>
+                                <td>NAF</td>
+                                <td>28.62 / 0.833</td>
+                                <td>28.20 / 0.833</td>
+                                <td>26.22 / 0.812</td>
+                                <td>23.85 / 0.712</td>
+                                <td>23.18 / 0.692</td>
+                                <td>21.37 / 0.618</td>
+                                <td>7m15s</td>
+                            </tr>
+                            <tr class="highlight">
+                                <td><strong>+DiffNR (Ours)</strong></td>
+                                <td><strong>31.27 / 0.951</strong></td>
+                                <td><strong>30.79 / 0.946</strong></td>
+                                <td><strong>28.10 / 0.906</strong></td>
+                                <td><strong>26.27 / 0.867</strong></td>
+                                <td><strong>25.15 / 0.839</strong></td>
+                                <td><strong>22.98 / 0.765</strong></td>
+                                <td>8m41s</td>
+                            </tr>
+                            <tr>
+                                <td>R<sup>2</sup>-Gaussian</td>
+                                <td>28.56 / 0.695</td>
+                                <td>26.36 / 0.634</td>
+                                <td>22.63 / 0.537</td>
+                                <td>24.11 / 0.577</td>
+                                <td>22.06 / 0.497</td>
+                                <td>18.32 / 0.364</td>
+                                <td>5m52s</td>
+                            </tr>
+                            <tr class="highlight">
+                                <td><strong>+DiffNR (Ours)</strong></td>
+                                <td><strong>33.52 / 0.900</strong></td>
+                                <td><strong>32.92 / 0.895</strong></td>
+                                <td><strong>29.71 / 0.852</strong></td>
+                                <td><strong>28.82 / 0.822</strong></td>
+                                <td><strong>27.43 / 0.793</strong></td>
+                                <td><strong>24.37 / 0.712</strong></td>
+                                <td>11m35s</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <figcaption style="text-align: center; width: 100%; margin-top: 0.8rem;">
+                        <strong>Table 1:</strong> Quantitative results (PSNR / SSIM) on ToothFairy and LUNA16 datasets. DiffNR consistently improves NR baselines while remaining much faster than diffusion-based iterative methods.
+                    </figcaption>
+                </div>
+
+                <!-- Qualitative Results -->
+                <d-figure>
+                    <figure>
+                        <img src="figs/qualitative_v4.png" alt="Qualitative comparison across methods, slicing directions, and sparsity levels" class="pdf-figure" style="width: 100%; height: auto; border: none;" data-zoomable="" draggable="false">
+                        <figcaption>
+                            <strong>Figure 4:</strong> Qualitative results of reconstructed volumes on two datasets, shown from different slicing directions and sparsity levels. DiffNR recovers finer details and effectively suppresses artifacts.
+                        </figcaption>
+                    </figure>
+                </d-figure>
+
+                <div class="highlight-box">
+                    <p>
+                        <i class="fas fa-bookmark" style="color: #8b7355; margin-right: 10px;"></i>
+                        DiffNR improves PSNR by <strong>3.99 dB</strong> on average across all settings, while previous SOTA DiffusionMBIR takes <strong>11 hours</strong> per case vs. DiffNR's <strong>~10 minutes</strong>.
+                    </p>
+                </div>
+
+                <h3 class="text">Out-of-Distribution Generalization</h3>
+                <p class="text">
+                    To evaluate generalization, we apply SliceFixer pretrained on ToothFairy to an OOD dataset containing 18 diverse cases spanning human organs, biological specimens, and artificial objects with real-world captured projections. DiffNR outperforms all baselines by suppressing hallucinations and artifacts, demonstrating that SliceFixer learns generalizable artifact patterns rather than dataset-specific features.
+                </p>
+
+                <d-figure>
+                    <figure>
+                        <img src="figs/ood_qualitative.png" alt="OOD qualitative results" class="pdf-figure" style="width: 60%; height: auto; border: none; display: block; margin: 0 auto;" data-zoomable="" draggable="false">
+                        <figcaption>
+                            <strong>Figure 5:</strong> Qualitative results on the OOD dataset. DiffNR suppresses hallucinations and artifacts on unseen domains including human organs, biological specimens, and artificial objects.
+                        </figcaption>
+                    </figure>
+                </d-figure>
+            </section>
+
+            <!-- ==================== ABLATION ==================== -->
+            <section id="ablation">
+                <h1 class="text">Ablation Study &amp; Analysis</h1>
+
+                <p class="text">
+                    We conduct comprehensive ablation studies to validate the design choices of both SliceFixer and DiffNR. Key findings include: (1) finetuning on 512<sup>2</sup> images with up-downsampling outperforms native 256<sup>2</sup> resolution; (2) SSIM loss and biplanar projection conditioning each provide significant gains; (3) augmenting slice supervision is more effective than projection-level augmentation for volumetric CT; and (4) integrating SliceFixer into the optimization loop with 3D perceptual SSIM loss is critical to avoid inter-slice jitter and hallucinations from standalone post-processing. We also validate DiffNR on downstream lung segmentation, where it produces substantially more accurate masks.
+                </p>
+
+                <d-figure>
+                    <figure>
+                        <img src="figs/ablations_v7.png" alt="Ablation study and downstream tasks" class="pdf-figure" style="width: 60%; height: auto; border: none; display: block; margin: 0 auto;" data-zoomable="" draggable="false">
+                        <figcaption>
+                            <strong>Figure 6:</strong> (a) Lung segmentation with the left lung in blue and the right lung in red. (b) Visualization of different design choices for SliceFixer. (c) Comparison of standalone SliceFixer post-processing and our proposed DiffNR.
+                        </figcaption>
+                    </figure>
+                </d-figure>
+            </section>
+
+            <!-- ==================== BIBTEX ==================== -->
+            <div id="bibtex">
+                <h2 class="text" style="margin-top: 0px; margin-bottom: 10px;">BibTeX</h2>
+                <div style="position: relative;">
+                    <button onclick="copyBibtex()" id="copy-btn" style="position: absolute; top: 8px; right: 8px; padding: 4px 12px; font-size: 0.8rem; cursor: pointer; background: #fff; border: 1px solid #ccc; border-radius: 4px; color: #333; transition: all 0.2s;">
+                        <i class="fas fa-copy" style="margin-right: 4px;"></i>Copy
+                    </button>
+                    <pre><code id="bibtex-code">@inproceedings{su2026diffnr,
+  title={DiffNR: Diffusion-Enhanced Neural Representation Optimization for Sparse-View 3D Tomographic Reconstruction},
+  author={Su, Shiyan and Zha, Ruyi and Shi, Danli and Li, Hongdong and Cheng, Xuelian},
+  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume={40},
+  number={11},
+  pages={9144--9152},
+  year={2026}
+}</code></pre>
+                </div>
+            </div>
+            <script>
+            function copyBibtex() {
+                var code = document.getElementById('bibtex-code').textContent;
+                navigator.clipboard.writeText(code).then(function() {
+                    var btn = document.getElementById('copy-btn');
+                    btn.innerHTML = '<i class="fas fa-check" style="margin-right:4px;"></i>Copied!';
+                    btn.style.borderColor = '#a89270';
+                    btn.style.color = '#8b7355';
+                    setTimeout(function() {
+                        btn.innerHTML = '<i class="fas fa-copy" style="margin-right:4px;"></i>Copy';
+                        btn.style.borderColor = '#ccc';
+                        btn.style.color = '#333';
+                    }, 2000);
+                });
+            }
+            </script>
+        </d-article>
+
+        <footer style="padding: 34px 0 60px; color: #6b7280; font-size: 14px; text-align: center;">
+            <div>Project page logo generated by Gemini.</div>
+            <div>We thank <a href="https://cambrian-mllm.github.io/cambrian-s/" style="color: #6b7280; text-decoration: none; border-bottom: none;">Cambrian-S</a> for opening the website page.</div>
+        </footer>
+    </body>
+</html>
